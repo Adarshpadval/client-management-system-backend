@@ -12,15 +12,4 @@ export const getAdminStats = (callback) => {
   });
 };
 
-// Update admin settings
-export const updateAdminSettings = (settings, callback) => {
-  const { settingName, settingValue } = settings;
-  const query = 'UPDATE admin_settings SET value = ? WHERE name = ?';
-  db.query(query, [settingValue, settingName], (err, results) => {
-    if (err) {
-      console.error('Error updating admin settings:', err);
-      return callback(err);
-    }
-    callback(null, { message: 'Admin settings updated successfully' });
-  });
-};
+

@@ -1,4 +1,42 @@
 import db from '../config/db.js'; // Import database configuration
+import bcrypt from 'bcrypt';
+
+//login user
+
+// Get user by email and verify password
+export const getUserByEmailAndPassword = async (email, password) => {
+  const query = 'SELECT * FROM users WHERE email = ?';
+  
+  try {
+    const [rows] = await db.query(query, [email]);
+
+    if (rows.length === 0) {
+      throw new Error('User not found');
+    }
+
+    const user = rows[0];
+    
+    // Ensure both the password and hashed password are provided
+    if (!password || !user.password_hash) {
+      throw new Error('Password or hash missing');
+    }
+
+    // Compare the plain-text password with the hashed password
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+
+    if (!isMatch) {
+      throw new Error('Invalid password');
+    }
+
+    // Return the user without the password hash for security
+    const { password_hash, ...userData } = user;
+    return userData;
+
+  } catch (err) {
+    console.error('Error fetching user by email and password:', err);
+    throw err;
+  }
+};
 
 // Get all users
 export const getAllUsers = async () => {
@@ -29,10 +67,13 @@ export const getUserById = async (id) => {
 
 // Create a new user
 export const createUser = async (userData) => {
-  const { name, email, phone } = userData;
-  const query = 'INSERT INTO users (name, email, phone) VALUES (?, ?, ?)';
+  if (!userData) {
+    throw new Error('User data is required');
+  }
+  const { name, email, phone, password } = userData;
+  const query = 'INSERT INTO users (name, email, phone_number, password_hash) VALUES (?, ?, ?, ?)';
   try {
-    const [result] = await db.query(query, [name, email, phone]);
+    const [result] = await db.query(query, [name, email, phone, password]);
     return { id: result.insertId, ...userData };
   } catch (err) {
     console.error('Error creating user:', err);
@@ -70,3 +111,6 @@ export const deleteUser = async (id) => {
     throw err;
   }
 };
+
+
+

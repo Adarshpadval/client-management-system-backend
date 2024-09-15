@@ -7,6 +7,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import wss from './websocket.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { PORT } from './config/config.js';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -19,8 +20,9 @@ server.on('upgrade', (request, socket, head) => {
     wss.emit('connection', ws, request);
   });
 });
-
+app.use(cors());
 app.use(express.json());
+
 
 // Register routes
 app.use('/api/users', userRoutes);
